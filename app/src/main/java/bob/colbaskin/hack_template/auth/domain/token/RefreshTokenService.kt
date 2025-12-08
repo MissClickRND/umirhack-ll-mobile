@@ -5,6 +5,6 @@ import retrofit2.http.GET
 
 interface RefreshTokenService {
 
-    @GET("/refresh")
+    @GET("/api/refresh")
     suspend fun refresh(): Response<Unit>
 }

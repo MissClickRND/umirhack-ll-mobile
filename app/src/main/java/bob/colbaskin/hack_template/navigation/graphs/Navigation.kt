@@ -16,7 +16,7 @@ import bob.colbaskin.hack_template.navigation.Screens
 import bob.colbaskin.hack_template.navigation.animatedTransition
 import bob.colbaskin.hack_template.onboarding.presentation.IntroductionScreen
 import bob.colbaskin.hack_template.onboarding.presentation.WelcomeScreen
-import bob.colbaskin.hack_template.profile.ProfileScreen
+import bob.colbaskin.hack_template.profile.presentation.ProfileScreenRoot
 
 
 fun NavGraphBuilder.onboardingGraph(
@@ -80,7 +80,7 @@ fun NavGraphBuilder.mainGraph(
             }
         }
         animatedTransition<Screens.Profile> {
-            ProfileScreen()
+            ProfileScreenRoot()
         }
     }
 }

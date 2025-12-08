@@ -2,7 +2,7 @@ package bob.colbaskin.hack_template.auth.presentation.sign_up
 
 import android.util.Patterns
 import bob.colbaskin.hack_template.common.UiState
-import bob.colbaskin.hack_template.common.user_prefs.domain.models.User
+import bob.colbaskin.hack_template.profile.domain.models.User
 
 data class SignUpState(
     val email: String = "",

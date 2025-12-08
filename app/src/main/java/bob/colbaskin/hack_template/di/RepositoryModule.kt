@@ -9,6 +9,10 @@ import bob.colbaskin.hack_template.auth.domain.token.RefreshTokenService
 import bob.colbaskin.hack_template.common.user_prefs.data.UserPreferencesRepositoryImpl
 import bob.colbaskin.hack_template.common.user_prefs.data.datastore.UserDataStore
 import bob.colbaskin.hack_template.common.user_prefs.domain.UserPreferencesRepository
+import bob.colbaskin.hack_template.di.token.TokenManager
+import bob.colbaskin.hack_template.profile.data.ProfileRepositoryImpl
+import bob.colbaskin.hack_template.profile.domain.ProfileRepository
+import bob.colbaskin.hack_template.profile.domain.ProfileService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,10 +41,12 @@ object RepositoryModule {
     fun provideAuthRepository(
         authApi: AuthApiService,
         userPreferences: UserPreferencesRepository,
+        tokenManager: TokenManager
     ): AuthRepository {
         return AuthRepositoryImpl(
             authApi = authApi,
-            userPreferences = userPreferences
+            userPreferences = userPreferences,
+            tokenManager = tokenManager
         )
     }
 
@@ -58,5 +64,17 @@ object RepositoryModule {
         return RefreshTokenRepositoryImpl(
             tokenApi = tokenApi
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideProfileService(retrofit: Retrofit): ProfileService {
+        return retrofit.create(ProfileService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProfileRepository (profileApi: ProfileService): ProfileRepository {
+        return ProfileRepositoryImpl(profileApi = profileApi)
     }
 }

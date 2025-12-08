@@ -16,8 +16,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val userPreferences: UserPreferencesRepository,
+    private val authRepository: AuthRepository
 
 ): ViewModel() {
 
@@ -33,6 +32,10 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
+    fun resetAuthState() {
+        state = state.copy(authState = UiState.Loading)
+    }
+
     private fun register() {
         state = state.copy(isLoading = true)
         viewModelScope.launch {
@@ -42,10 +45,9 @@ class SignUpViewModel @Inject constructor(
             ).toUiState()
 
             state = state.copy(
-                authState = UiState.Success(Unit)/* response */,
+                authState = response,
                 isLoading = false
             )
-            userPreferences.saveAuthStatus(AuthConfig.AUTHENTICATED)
         }
     }
 

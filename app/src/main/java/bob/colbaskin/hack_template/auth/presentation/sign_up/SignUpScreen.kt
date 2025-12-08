@@ -24,10 +24,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,14 +39,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import bob.colbaskin.hack_template.auth.presentation.sign_in.SignInAction
-import bob.colbaskin.hack_template.auth.presentation.sign_in.SignInState
-import bob.colbaskin.hack_template.auth.presentation.sign_in.SignInViewModel
 import bob.colbaskin.hack_template.common.UiState
 import bob.colbaskin.hack_template.common.design_system.theme.CustomTheme
 import bob.colbaskin.hack_template.navigation.Screens
 import bob.colbaskin.hack_template.navigation.graphs.Graphs
-import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpScreenRoot(
@@ -56,24 +52,24 @@ fun SignUpScreenRoot(
 ) {
     val state = viewModel.state
     val authState = state.authState
-    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(authState) {
+        if (authState is UiState.Error) {
+            snackbarHostState.showSnackbar(
+                authState.title,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.resetAuthState()
+        }
+    }
 
     SignUpScreen(
         state = state,
         onAction = { action ->
             when (action) {
                 SignUpAction.SignUp -> {
-                    when (authState) {
-                        is UiState.Success -> { navController.navigate(Graphs.Main) }
-                        is UiState.Error -> {
-                            scope.launch {
-                                snackbarHostState.showSnackbar(
-                                    authState.title,
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-                        }
-                        else -> {}
+                    if (authState is UiState.Success<*>) {
+                        navController.navigate(Graphs.Main)
                     }
                 }
                 SignUpAction.SignIn -> { navController.navigate(Screens.SignIn) }

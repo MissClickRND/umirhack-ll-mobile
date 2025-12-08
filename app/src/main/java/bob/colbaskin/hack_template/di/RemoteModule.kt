@@ -5,10 +5,13 @@ import android.util.Log
 import bob.colbaskin.hack_template.BuildConfig
 import bob.colbaskin.hack_template.auth.domain.token.RefreshTokenRepository
 import bob.colbaskin.hack_template.di.token.TokenAuthenticator
+import bob.colbaskin.hack_template.di.token.TokenInterceptor
+import bob.colbaskin.hack_template.di.token.TokenManager
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,9 +49,15 @@ object RemoteModule {
 
     @Provides
     @Singleton
+    fun provideTokenInterceptor(tokenManager: TokenManager): TokenInterceptor {
+        return TokenInterceptor(tokenManager)
+    }
+
+    @Provides
+    @Singleton
     fun provideOkHttpClient(
         @ApplicationContext context: Context,
-        tokenAuthenticator: TokenAuthenticator
+        tokenInterceptor: TokenInterceptor
     ): OkHttpClient {
         val cookieJar = PersistentCookieJar(
             SetCookieCache(),
@@ -57,6 +66,7 @@ object RemoteModule {
 
         return OkHttpClient.Builder()
             .cookieJar(cookieJar)
+            .addInterceptor(tokenInterceptor)
             .addInterceptor(HttpLoggingInterceptor().apply {
                 setLevel(HttpLoggingInterceptor.Level.BODY)
             })
@@ -66,9 +76,6 @@ object RemoteModule {
                 val response = chain.proceed(request)
                 Log.d("Cookies", "Received cookies: ${response.headers["Set-Cookie"]}")
                 response
-            }
-            .authenticator { route, response ->
-                tokenAuthenticator.authenticate(route, response)
             }
             .build()
     }

@@ -40,11 +40,12 @@ class UserDataStore(context: Context) {
             }
         }
     }
+
     suspend fun saveOnboardingStatus(status: OnboardingConfig) {
         Log.d(TAG, "saveOnboardingStatus: $status")
         dataStore.updateData { prefs ->
             prefs.copy {
-                onboardingStatus  = when (status) {
+                onboardingStatus = when (status) {
                     OnboardingConfig.NOT_STARTED -> OnboardingStatus.NOT_STARTED
                     OnboardingConfig.IN_PROGRESS -> OnboardingStatus.IN_PROGRESS
                     OnboardingConfig.COMPLETED -> OnboardingStatus.COMPLETED

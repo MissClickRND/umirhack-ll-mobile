@@ -202,7 +202,7 @@ private fun MainVerificationCard(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Введите данные диплома для\nполучения официального подтверждения.",
+            text = "Введите данные диплома для получения официального подтверждения.",
             color = colors.textSecondary,
             fontSize = 13.sp,
             lineHeight = 18.sp
@@ -234,7 +234,7 @@ private fun MainVerificationCard(
             Icon(
                 imageVector = TablerIcons.InfoCircle,
                 contentDescription = null,
-                tint = colors.secondary,
+                tint = colors.textSecondary,
                 modifier = Modifier.size(24.dp)
             )
             Text(

@@ -12,4 +12,4 @@ data class ProfileLinkItem(
 enum class ProfileLinkType {
     LINK,
     PDF
-}
+} // убрать. ссылка будет генерироваться по токену + ссылке на сайт наш

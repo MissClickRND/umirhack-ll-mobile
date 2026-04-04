@@ -1,5 +1,6 @@
 package bob.colbaskin.umir_hack_2.common.design_system
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +19,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import bob.colbaskin.umir_hack_2.R
+import bob.colbaskin.umir_hack_2.common.design_system.theme.CustomTheme
 
 @Composable
 fun ErrorScreen(
@@ -25,7 +27,9 @@ fun ErrorScreen(
     onError: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(CustomTheme.colors.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -42,8 +46,8 @@ fun ErrorScreen(
         Button(
             onClick = { onError() },
             colors = ButtonDefaults.buttonColors(
-                //containerColor = ButtonColor,
-                //contentColor = TextColor
+                containerColor = CustomTheme.colors.buttonSecondaryBackground,
+                contentColor = CustomTheme.colors.textSecondary
             )
         ) {
             Text("Попробовать снова")

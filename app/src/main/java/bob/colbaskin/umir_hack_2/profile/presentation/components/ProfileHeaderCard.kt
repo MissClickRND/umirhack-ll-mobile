@@ -55,9 +55,7 @@ fun ProfileHeaderCard(
                     modifier = Modifier.size(30.dp)
                 )
             }
-
             Spacer(modifier = Modifier.size(12.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = user.email,
@@ -70,22 +68,18 @@ fun ProfileHeaderCard(
                     fontSize = 13.sp
                 )
             }
-
             Box(
                 modifier = Modifier
                     .size(12.dp)
                     .background(Color(0xFF2ECC71), CircleShape)
             )
         }
-
         Spacer(modifier = Modifier.height(16.dp))
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             ProfileMetaCard(
-                title = "Роль",
                 value = user.role,
                 modifier = Modifier.weight(1f)
             )
@@ -95,28 +89,27 @@ fun ProfileHeaderCard(
 
 @Composable
 private fun ProfileMetaCard(
-    title: String,
     value: Role,
     modifier: Modifier = Modifier
 ) {
     val colors = CustomTheme.colors
 
-    Column(
+    Row(
         modifier = modifier
             .background(colors.surfaceSecondary, RoundedCornerShape(18.dp))
             .padding(12.dp)
     ) {
         Text(
-            text = title,
+            text = "Роль: ",
             color = colors.textSecondary,
             fontSize = 12.sp
         )
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.size(2.dp))
         Text(
             text = if (value == Role.STUDENT) "Студент" else "Гость",
-            color = colors.textPrimary,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold
+            color = colors.textSecondary,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
         )
     }
 }

@@ -17,11 +17,11 @@ plugins {
 }
 
 android {
-    namespace = "bob.colbaskin.hack_template"
+    namespace = "bob.colbaskin.umir_hack_2"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "bob.colbaskin.hack_template"
+        applicationId = "bob.colbaskin.umir_hack_2"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -133,4 +133,19 @@ dependencies {
 
     // Material Icons
     implementation(libs.androidx.material.icons.extended)
+    // Compose icons
+    implementation(libs.composeIcons.tablerIcons)
+
+    // Coil
+    implementation(libs.coil.compose)
+
+    // Scanbot SDK
+    implementation(libs.scanbot.barcode.scanner.sdk)
+    implementation(libs.rtu.ui.v2.barcode)
+    implementation(libs.androidx.localbroadcastmanager)
+
+    // Qr
+    implementation(libs.core)
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
 }

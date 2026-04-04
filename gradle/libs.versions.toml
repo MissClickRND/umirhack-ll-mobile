@@ -52,6 +52,19 @@ accompanistPager = "0.36.0"
 
 # Material Icons
 materialIconsCore = "1.7.8"
+# Compose icons
+composeIcons = "1.1.1"
+
+# Coil
+coilCompose = "2.7.0"
+
+# Scanbot SDK
+scanbotBarcodeScannerSdk = "7.1.2"
+rtuUiV2Barcode = "7.1.2"
+localbroadcastmanager = "1.1.0"
+
+# Qr
+core = "3.5.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -111,6 +124,19 @@ accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pa
 
 # Material Icons
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsCore" }
+# Compose icons
+composeIcons-tablerIcons = { module = "br.com.devsrsouza.compose.icons:tabler-icons", version.ref = "composeIcons" }
+
+# Coil
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+
+# Scanbot SDK
+rtu-ui-v2-barcode = { module = "io.scanbot:rtu-ui-v2-barcode", version.ref = "rtuUiV2Barcode" }
+scanbot-barcode-scanner-sdk = { module = "io.scanbot:scanbot-barcode-scanner-sdk", version.ref = "scanbotBarcodeScannerSdk" }
+androidx-localbroadcastmanager = { module = "androidx.localbroadcastmanager:localbroadcastmanager", version.ref = "localbroadcastmanager" }
+
+# Qr
+core = { module = "com.google.zxing:core", version.ref = "core" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

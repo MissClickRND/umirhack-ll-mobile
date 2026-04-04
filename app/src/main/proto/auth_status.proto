@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option java_package = "bob.colbaskin.hack.datastore";
+option java_package = "bob.colbaskin.umir_hack_2.datastore";
 option java_multiple_files = true;
 
 enum AuthStatus {

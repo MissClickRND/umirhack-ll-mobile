@@ -1,0 +1,10 @@
+package bob.colbaskin.umir_hack_2.profile.domain
+
+import bob.colbaskin.umir_hack_2.auth.data.models.UserDTO
+import retrofit2.http.GET
+
+interface ProfileService {
+
+    @GET("/api/v1/user/me")
+    suspend fun getUser(): UserDTO
+}

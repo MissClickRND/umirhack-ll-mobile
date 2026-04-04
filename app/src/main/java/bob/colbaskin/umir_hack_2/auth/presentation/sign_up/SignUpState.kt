@@ -7,7 +7,6 @@ import bob.colbaskin.umir_hack_2.common.user_prefs.domain.models.User
 data class SignUpState(
     val email: String = "",
     val password: String = "",
-    val name: String = "",
     val isLoading: Boolean = false,
     val authState: UiState<User> = UiState.Loading
 ) {

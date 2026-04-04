@@ -5,6 +5,7 @@ import bob.colbaskin.umir_hack_2.common.user_prefs.data.models.AuthConfig
 import bob.colbaskin.umir_hack_2.common.user_prefs.data.models.OnboardingConfig
 import bob.colbaskin.umir_hack_2.common.user_prefs.data.models.UserPreferences
 import bob.colbaskin.umir_hack_2.common.user_prefs.domain.UserPreferencesRepository
+import bob.colbaskin.umir_hack_2.common.user_prefs.domain.models.Role
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
@@ -15,6 +16,8 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override fun getUserPreferences(): Flow<UserPreferences> = dataStore.getUserPreferences()
 
     override suspend fun saveAuthStatus(status: AuthConfig) = dataStore.saveAuthStatus(status)
+
+    override suspend fun saveRoleStatus(status: Role) = dataStore.saveRoleStatus(status)
 
     override suspend fun saveOnboardingStatus(status: OnboardingConfig)
             = dataStore.saveOnboardingStatus(status)

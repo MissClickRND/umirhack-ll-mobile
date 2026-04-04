@@ -1,11 +1,12 @@
 package bob.colbaskin.umir_hack_2.auth.data
 
 import android.util.Log
-import bob.colbaskin.umir_hack_2.auth.data.models.LoginBody
-import bob.colbaskin.umir_hack_2.auth.data.models.LogoutDTO
-import bob.colbaskin.umir_hack_2.auth.data.models.RegisterBody
-import bob.colbaskin.umir_hack_2.auth.data.models.StatusDTO
-import bob.colbaskin.umir_hack_2.auth.data.models.UserDTO
+import bob.colbaskin.umir_hack_2.auth.data.models.body.LoginBody
+import bob.colbaskin.umir_hack_2.auth.data.models.dto.LogoutDTO
+import bob.colbaskin.umir_hack_2.auth.data.models.body.RegisterBody
+import bob.colbaskin.umir_hack_2.auth.data.models.dto.LoginDTO
+import bob.colbaskin.umir_hack_2.auth.data.models.dto.RegisterDTO
+import bob.colbaskin.umir_hack_2.auth.data.models.dto.StatusDTO
 import bob.colbaskin.umir_hack_2.auth.domain.AuthApiService
 import bob.colbaskin.umir_hack_2.auth.domain.AuthRepository
 import bob.colbaskin.umir_hack_2.common.ApiResult
@@ -23,24 +24,26 @@ class AuthRepositoryImpl @Inject constructor(
 ): AuthRepository {
     override suspend fun register(
         email: String,
-        password: String,
-        name: String
+        password: String
     ): ApiResult<User> {
         Log.d(TAG, "Attempting register for user: $email")
-        return safeApiCall<UserDTO, User>(
+        return safeApiCall<RegisterDTO, User>(
             apiCall = {
                 authApi.register(
                     body = RegisterBody(
+                        accountType = "student",
                         email = email,
                         password = password,
-                        name = name
+                        name = "",
+                        shortName = ""
                     )
                 )
             },
             successHandler = { response ->
                 Log.d(TAG, "Register successful. Saving AUTHENTICATED status")
+                userPreferences.saveRoleStatus(response.user.role.toDomain())
                 userPreferences.saveAuthStatus(AuthConfig.AUTHENTICATED)
-                response.toDomain()
+                response.user.toDomain()
             }
         )
     }
@@ -50,7 +53,7 @@ class AuthRepositoryImpl @Inject constructor(
         password: String
     ): ApiResult<User> {
         Log.d(TAG, "Attempting login for user: $email")
-        return safeApiCall<UserDTO, User>(
+        return safeApiCall<LoginDTO, User>(
             apiCall = {
                 authApi.login(
                     body = LoginBody(
@@ -61,26 +64,26 @@ class AuthRepositoryImpl @Inject constructor(
             },
             successHandler = { response ->
                 Log.d(TAG, "Login successful. Saving AUTHENTICATED status")
+                userPreferences.saveRoleStatus(response.user.role.toDomain())
                 userPreferences.saveAuthStatus(AuthConfig.AUTHENTICATED)
-                response.toDomain()
+                response.user.toDomain()
             }
         )
     }
 
-    override suspend fun refresh(): ApiResult<User> {
+    override suspend fun refresh(): ApiResult<Unit> {
         Log.d(TAG, "Attempting refresh")
-        return safeApiCall<UserDTO, User>(
+        return safeApiCall<Unit, Unit>(
             apiCall = { authApi.refresh() },
             successHandler = { response ->
                 Log.d(TAG, "Refresh successful.")
-                response.toDomain()
             }
         )
     }
 
-    override suspend fun status(): ApiResult<StatusDTO> {
+    override suspend fun status(): ApiResult<Boolean> {
         Log.d(TAG, "Attempting update auth status")
-        return safeApiCall<StatusDTO, StatusDTO>(
+        return safeApiCall<StatusDTO, Boolean>(
             apiCall = { authApi.status() },
             successHandler = { response ->
                 if (response.authenticated) {
@@ -90,19 +93,18 @@ class AuthRepositoryImpl @Inject constructor(
                     Log.d(TAG, "Update successful. Saving NOT_AUTHENTICATEDstatus")
                     userPreferences.saveAuthStatus(AuthConfig.NOT_AUTHENTICATED)
                 }
-                response
+                response.authenticated
             }
         )
     }
 
-    override suspend fun logout(): ApiResult<LogoutDTO> {
+    override suspend fun logout(): ApiResult<Unit> {
         Log.d(TAG, "Attempting logout")
-        return safeApiCall<LogoutDTO, LogoutDTO>(
+        return safeApiCall<LogoutDTO, Unit>(
             apiCall = { authApi.logout() },
             successHandler = { response ->
                 Log.d(TAG, "Logout successful. Saving NOT_AUTHENTICATED status")
                 userPreferences.saveAuthStatus(AuthConfig.NOT_AUTHENTICATED)
-                response
             }
         )
     }

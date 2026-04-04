@@ -1,5 +1,10 @@
 package bob.colbaskin.umir_hack_2.diploma_check.presentation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -18,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
@@ -37,6 +43,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,7 +54,7 @@ import bob.colbaskin.umir_hack_2.diploma_check.presentation.components.QrCheckRe
 import bob.colbaskin.umir_hack_2.navigation.NavResultKeys
 import bob.colbaskin.umir_hack_2.navigation.Screens
 import compose.icons.TablerIcons
-import compose.icons.tablericons.Loader
+import compose.icons.tablericons.InfoCircle
 import compose.icons.tablericons.Qrcode
 
 @Composable
@@ -82,6 +90,10 @@ fun DiplomaCheckScreenRoot(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.onAction(DiplomaCheckAction.RefreshAuthStatus)
+    }
+
     DiplomaCheckScreen(
         state = state,
         onAction = { action ->
@@ -89,9 +101,9 @@ fun DiplomaCheckScreenRoot(
                 DiplomaCheckAction.OpenQrScanner -> {
                     navController.navigate(Screens.QrScanner)
                 }
-//                DiplomaCheckAction.OpenSignIn -> {
-//                    navController.navigate(Screens.SignIn)
-//                }
+                DiplomaCheckAction.OpenSignIn -> {
+                    navController.navigate(Screens.SignIn)
+                }
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -121,26 +133,24 @@ private fun DiplomaCheckScreen(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Проверка диплома",
-                    color = colors.textPrimary,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 32.sp
-                )
-
-                TextButton(
-                    onClick = { onAction(DiplomaCheckAction.OpenSignIn) }
+                AnimatedVisibility(
+                    visible = !state.isAuthorized,
+                    enter = fadeIn() + expandHorizontally(),
+                    exit = fadeOut() + shrinkHorizontally()
                 ) {
-                    Text(
-                        text = "Войти",
-                        color = colors.textPrimary,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    TextButton(
+                        onClick = { onAction(DiplomaCheckAction.OpenSignIn) }
+                    ) {
+                        Text(
+                            text = "Войти",
+                            color = colors.textPrimary,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(18.dp))
@@ -182,7 +192,7 @@ private fun MainVerificationCard(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Проверка\nподлинности",
+            text = "Проверка подлинности",
             color = colors.textPrimary,
             fontSize = 20.sp,
             lineHeight = 24.sp,
@@ -192,7 +202,7 @@ private fun MainVerificationCard(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Введите данные документа для\nполучения официального подтверждения\nиз ФРДО.",
+            text = "Введите данные диплома для\nполучения официального подтверждения.",
             color = colors.textSecondary,
             fontSize = 13.sp,
             lineHeight = 18.sp
@@ -201,9 +211,9 @@ private fun MainVerificationCard(
         Spacer(modifier = Modifier.height(18.dp))
 
         SearchInput(
-            value = state.query,
+            value = state.diplomaInput,
             onValueChange = { onAction(DiplomaCheckAction.UpdateQuery(it)) },
-            placeholder = "Введите номер диплома или ФИО"
+            placeholder = "Введите номер диплома"
         )
 
         Spacer(modifier = Modifier.height(14.dp))
@@ -222,9 +232,10 @@ private fun MainVerificationCard(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = TablerIcons.Loader,
+                imageVector = TablerIcons.InfoCircle,
                 contentDescription = null,
-                tint = colors.secondary
+                tint = colors.secondary,
+                modifier = Modifier.size(24.dp)
             )
             Text(
                 text = "Проверка происходит мнгновенно!",
@@ -286,7 +297,7 @@ private fun QrScannerCard(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Быстрая проверка по коду на\nбланке диплома без ручного\nввода",
+                text = "Быстрая проверка по коду на бланке диплома без ручного ввода",
                 color = colors.textSecondary,
                 fontSize = 13.sp,
                 lineHeight = 18.sp
@@ -295,7 +306,9 @@ private fun QrScannerCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
             ) {
                 Text(
                     text = "Открыть камеру",
@@ -346,8 +359,8 @@ private fun RegistryBadge() {
 
 @Composable
 private fun SearchInput(
-    value: String,
-    onValueChange: (String) -> Unit,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     placeholder: String,
 ) {
     val colors = CustomTheme.colors
@@ -368,9 +381,12 @@ private fun SearchInput(
                 fontSize = 14.sp
             ),
             cursorBrush = SolidColor(colors.primary),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number
+            ),
             modifier = Modifier.fillMaxWidth(),
             decorationBox = { innerTextField ->
-                if (value.isBlank()) {
+                if (value.text.isBlank()) {
                     Text(
                         text = placeholder,
                         color = colors.textSecondary,
@@ -417,25 +433,12 @@ private fun GradientActionButton(
                 color = colors.textOnPrimary
             )
         } else {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = text,
-                    color = colors.textOnPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.size(4.dp))
-
-                Text(
-                    text = "→",
-                    color = colors.textOnPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            Text(
+                text = text,
+                color = colors.textOnPrimary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

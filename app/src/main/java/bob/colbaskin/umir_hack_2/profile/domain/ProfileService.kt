@@ -1,6 +1,6 @@
 package bob.colbaskin.umir_hack_2.profile.domain
 
-import bob.colbaskin.umir_hack_2.auth.data.models.UserDTO
+import bob.colbaskin.umir_hack_2.auth.data.models.dto.UserDTO
 import retrofit2.http.GET
 
 interface ProfileService {

@@ -58,16 +58,33 @@ fun SignUpScreenRoot(
         }
     }
 
+    LaunchedEffect(authState) {
+        when (authState) {
+            is UiState.Error -> {
+                snackbarHostState.showSnackbar(
+                    authState.title,
+                    duration = SnackbarDuration.Short
+                )
+                viewModel.resetAuthState()
+            }
+
+            is UiState.Success<*> -> {
+                navController.navigate(Graphs.Main) {
+                    popUpTo(Screens.SignUp) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+
+            else -> Unit
+        }
+    }
+
     SignUpScreen(
         state = state,
         onAction = { action ->
             when (action) {
-                SignUpAction.SignUp -> {
-                    if (authState is UiState.Success<*>) {
-                        navController.navigate(Graphs.Main)
-                    }
-                }
                 SignUpAction.SignIn -> navController.navigate(Screens.SignIn)
+                SignUpAction.NavigateBack -> navController.navigate(Screens.DiplomaCheck)
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -85,23 +102,16 @@ private fun SignUpScreen(
 
     AuthScreenContainer(
         title = "Регистрация",
-        subtitle = "Создайте профиль сотрудника или работодателя для безопасной проверки подлинности дипломов и цифровых сертификатов."
+        subtitle = "Создайте профиль сотрудника или работодателя для безопасной проверки подлинности дипломов и цифровых сертификатов.",
+        onBackClick = { onAction(SignUpAction.NavigateBack) }
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-
-            AuthTextField(
-                value = state.name,
-                onValueChange = { onAction(SignUpAction.UpdateName(it)) },
-                label = "Имя"
-            )
-
             AuthTextField(
                 value = state.email,
                 onValueChange = { onAction(SignUpAction.UpdateEmail(it)) },
                 label = "Email",
                 isError = !state.isEmailValid
             )
-
             AuthTextField(
                 value = state.password,
                 onValueChange = { onAction(SignUpAction.UpdatePassword(it)) },
@@ -125,9 +135,7 @@ private fun SignUpScreen(
                     }
                 }
             )
-
             Spacer(modifier = Modifier.height(6.dp))
-
             Button(
                 onClick = { onAction(SignUpAction.SignUp) },
                 modifier = Modifier
@@ -156,7 +164,6 @@ private fun SignUpScreen(
                     )
                 }
             }
-
             TextButton(
                 onClick = { onAction(SignUpAction.SignIn) },
                 modifier = Modifier.fillMaxWidth()

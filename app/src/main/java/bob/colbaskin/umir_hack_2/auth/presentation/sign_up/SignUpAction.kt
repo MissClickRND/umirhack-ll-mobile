@@ -1,9 +1,9 @@
 package bob.colbaskin.umir_hack_2.auth.presentation.sign_up
 
 interface SignUpAction {
-    data object SignIn : SignUpAction
-    data object SignUp : SignUpAction
+    data object SignIn: SignUpAction
+    data object SignUp: SignUpAction
     data class UpdateEmail(val email: String): SignUpAction
     data class UpdatePassword(val password: String): SignUpAction
-    data class UpdateName(val name: String): SignUpAction
+    data object NavigateBack: SignUpAction
 }

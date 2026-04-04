@@ -10,6 +10,8 @@ import bob.colbaskin.umir_hack_2.common.user_prefs.data.models.AuthConfig
 import bob.colbaskin.umir_hack_2.common.user_prefs.data.models.OnboardingConfig
 import bob.colbaskin.umir_hack_2.common.user_prefs.data.models.UserPreferences
 import bob.colbaskin.umir_hack_2.common.user_prefs.data.models.toData
+import bob.colbaskin.umir_hack_2.common.user_prefs.domain.models.Role
+import bob.colbaskin.umir_hack_2.datastore.RoleStatus
 import bob.colbaskin.umir_hack_2.datastore.UserPreferencesProto
 import bob.colbaskin.umir_hack_2.datastore.copy
 
@@ -36,6 +38,18 @@ class UserDataStore(context: Context) {
                 authStatus = when (status) {
                     AuthConfig.NOT_AUTHENTICATED -> AuthStatus.NOT_AUTHENTICATED
                     AuthConfig.AUTHENTICATED -> AuthStatus.AUTHENTICATED
+                }
+            }
+        }
+    }
+
+    suspend fun saveRoleStatus(status: Role) {
+        Log.d(TAG, "saveRoleStatus: $status")
+        dataStore.updateData { prefs ->
+            prefs.copy {
+                roleStatus = when (status) {
+                    Role.STUDENT -> RoleStatus.STUDENT
+                    Role.GUEST -> RoleStatus.GUEST
                 }
             }
         }

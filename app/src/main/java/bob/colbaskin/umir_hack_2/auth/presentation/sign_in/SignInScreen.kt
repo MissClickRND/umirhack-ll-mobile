@@ -49,12 +49,23 @@ fun SignInScreenRoot(
     val authState = state.authState
 
     LaunchedEffect(authState) {
-        if (authState is UiState.Error) {
-            snackbarHostState.showSnackbar(
-                authState.title,
-                duration = SnackbarDuration.Short
-            )
-            viewModel.resetAuthState()
+        when (authState) {
+            is UiState.Error -> {
+                snackbarHostState.showSnackbar(
+                    authState.title,
+                    duration = SnackbarDuration.Short
+                )
+                viewModel.resetAuthState()
+            }
+
+            is UiState.Success<*> -> {
+                navController.navigate(Graphs.Main) {
+                    popUpTo(Screens.SignIn) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+
+            else -> Unit
         }
     }
 
@@ -62,12 +73,8 @@ fun SignInScreenRoot(
         state = state,
         onAction = { action ->
             when (action) {
-                SignInAction.SignIn -> {
-                    if (authState is UiState.Success<*>) {
-                        navController.navigate(Graphs.Main)
-                    }
-                }
                 SignInAction.SignUp -> navController.navigate(Screens.SignUp)
+                SignInAction.NavigateBack -> navController.navigate(Screens.DiplomaCheck)
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -85,7 +92,8 @@ private fun SignInScreen(
 
     AuthScreenContainer(
         title = "Вход в платформу",
-        subtitle = "Проверьте подлинность диплома, отсканируйте QR-код или выполните верификацию через API работодателя."
+        subtitle = "Проверьте подлинность диплома, отсканируйте QR-код или выполните верификацию через API работодателя.",
+        onBackClick = { onAction(SignInAction.NavigateBack) }
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             AuthTextField(

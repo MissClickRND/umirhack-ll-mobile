@@ -26,7 +26,6 @@ class SignUpViewModel @Inject constructor(
             SignUpAction.SignUp -> register()
             is SignUpAction.UpdateEmail -> updateEmail(action.email)
             is SignUpAction.UpdatePassword -> updatePassword(action.password)
-            is SignUpAction.UpdateName -> updateName(action.name)
             else -> Unit
         }
     }
@@ -40,7 +39,6 @@ class SignUpViewModel @Inject constructor(
         viewModelScope.launch {
             val response = authRepository.register(
                 email = state.email,
-                name = state.name,
                 password = state.password
             ).toUiState()
 
@@ -59,7 +57,4 @@ class SignUpViewModel @Inject constructor(
         state = state.copy(password = password)
     }
 
-    private fun updateName(name: String) {
-        state = state.copy(name = name)
-    }
 }

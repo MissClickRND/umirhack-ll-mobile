@@ -24,9 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import bob.colbaskin.umir_hack_2.common.design_system.theme.CustomTheme
+import bob.colbaskin.umir_hack_2.common.user_prefs.domain.models.Role
 import bob.colbaskin.umir_hack_2.common.user_prefs.domain.models.User
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun ProfileHeaderCard(
@@ -61,13 +60,6 @@ fun ProfileHeaderCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = formatUserName(user.name),
-                    color = colors.textPrimary,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
                     text = user.email,
                     color = colors.textSecondary,
                     fontSize = 13.sp
@@ -94,15 +86,7 @@ fun ProfileHeaderCard(
         ) {
             ProfileMetaCard(
                 title = "Роль",
-                value = user.role.replaceFirstChar { it.uppercase() },
-                modifier = Modifier.weight(1f)
-            )
-            ProfileMetaCard(
-                title = "Создан",
-                value = user.createdAt
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-                    .format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                value = user.role,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -112,7 +96,7 @@ fun ProfileHeaderCard(
 @Composable
 private fun ProfileMetaCard(
     title: String,
-    value: String,
+    value: Role,
     modifier: Modifier = Modifier
 ) {
     val colors = CustomTheme.colors
@@ -129,14 +113,10 @@ private fun ProfileMetaCard(
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = value,
+            text = if (value == Role.STUDENT) "Студент" else "Гость",
             color = colors.textPrimary,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold
         )
     }
-}
-
-private fun formatUserName(raw: String): String {
-    return raw.replaceFirstChar { it.uppercase() }
 }

@@ -3,11 +3,11 @@ package bob.colbaskin.umir_hack_2.diploma_check.presentation
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import bob.colbaskin.umir_hack_2.common.ApiResult
-import bob.colbaskin.umir_hack_2.common.user_prefs.data.models.AuthConfig
-import bob.colbaskin.umir_hack_2.common.user_prefs.domain.UserPreferencesRepository
 import bob.colbaskin.umir_hack_2.scanner.domain.ScannerRepository
 import bob.colbaskin.umir_hack_2.scanner.domain.models.DocumentStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,23 +16,28 @@ import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import bob.colbaskin.umir_hack_2.auth.domain.AuthRepository
 
 @HiltViewModel
 class DiplomaCheckViewModel @Inject constructor(
     private val scannerRepository: ScannerRepository,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val authRepository: AuthRepository
 ): ViewModel() {
 
     var state by mutableStateOf(DiplomaCheckState())
         private set
     private var qrJob: Job? = null
 
+    init {
+        observeAuthStatus()
+    }
+
     fun onAction(action: DiplomaCheckAction) {
         when (action) {
             is DiplomaCheckAction.UpdateQuery -> updateQuery(action.value)
             DiplomaCheckAction.VerifyDiploma -> verifyDiploma()
             DiplomaCheckAction.OpenHowItWorks -> openHowItWorksStub()
-            DiplomaCheckAction.OpenSignIn -> openSignInStub()
+            DiplomaCheckAction.RefreshAuthStatus -> refreshAuthStatus()
             DiplomaCheckAction.ClearMessage -> clearMessage()
             is DiplomaCheckAction.OnQrScanned -> handleQr(action.qrText)
             DiplomaCheckAction.ClearQrResult -> state = state.copy(
@@ -42,6 +47,38 @@ class DiplomaCheckViewModel @Inject constructor(
                 qrRawText = null
             )
             else -> Unit
+        }
+    }
+
+    private fun refreshAuthStatus() {
+        viewModelScope.launch {
+            state = when (val result = authRepository.status()) {
+                is ApiResult.Success -> {
+                    state.copy(isAuthorized = result.data)
+                }
+
+                is ApiResult.Error -> {
+                    state.copy(isAuthorized = false)
+                }
+            }
+        }
+    }
+
+    private fun observeAuthStatus() {
+        viewModelScope.launch {
+            when (val result = authRepository.status()) {
+                is ApiResult.Success -> {
+                    state = state.copy(
+                        isAuthorized = result.data
+                    )
+                }
+
+                is ApiResult.Error -> {
+                    state = state.copy(
+                        isAuthorized = false
+                    )
+                }
+            }
         }
     }
 
@@ -101,8 +138,33 @@ class DiplomaCheckViewModel @Inject constructor(
         } else t
     }
 
-    private fun updateQuery(value: String) {
-        state = state.copy(query = value)
+    private fun updateQuery(input: TextFieldValue) {
+        val rawText = input.text
+        val digitsOnly = rawText.filter { it.isDigit() }.take(13)
+
+        val formatted = buildString {
+            digitsOnly.forEachIndexed { index, c ->
+                if (index == 6) append(' ')
+                append(c)
+            }
+        }
+
+        val digitsBeforeCursor = rawText
+            .take(input.selection.start)
+            .count { it.isDigit() }
+            .coerceAtMost(digitsOnly.length)
+
+        val newCursorPosition = when {
+            digitsBeforeCursor <= 6 -> digitsBeforeCursor
+            else -> digitsBeforeCursor + 1
+        }.coerceAtMost(formatted.length)
+
+        state = state.copy(
+            diplomaInput = TextFieldValue(
+                text = formatted,
+                selection = TextRange(newCursorPosition)
+            )
+        )
     }
 
     private fun verifyDiploma() {
@@ -123,15 +185,6 @@ class DiplomaCheckViewModel @Inject constructor(
     private fun openHowItWorksStub() {
         state = state.copy(
             infoMessage = "Заглушка: здесь можно открыть экран с описанием процесса проверки."
-        )
-    }
-
-    private fun openSignInStub() {
-        viewModelScope.launch {
-            userPreferencesRepository.saveAuthStatus(AuthConfig.AUTHENTICATED)
-        }
-        state = state.copy(
-            infoMessage = "Переход на экран авторизации."
         )
     }
 

@@ -75,33 +75,28 @@ fun Welcome(
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        text = "Платформа верификации дипломов",
+                        text = "Платформа дипломов",
                         color = colors.textSecondary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
-
                 Spacer(modifier = Modifier.height(24.dp))
-
                 Text(
-                    text = "Проверка подлинности диплома\nпри найме нового сотрудника",
+                    text = "Открытая проверка подлинности диплома",
                     color = colors.textPrimary,
                     fontSize = 30.sp,
                     lineHeight = 36.sp,
                     fontWeight = FontWeight.Bold
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 Text(
-                    text = "Сервис связывает ВУЗ, выпускника и работодателя: диплом хранится в системе в захешированном виде, выпускник получает цифровой сертификат с QR-кодом, а компания проверяет данные через сканирование или API.",
+                    text = "Платформа позволяет каждому пользователю самостоятельно проверить подлинность своего диплома. Данные хранятся в защищенном виде, а для проверки достаточно ввести номер диплома и фамилию владельца.",
                     color = colors.textSecondary,
                     fontSize = 16.sp,
                     lineHeight = 24.sp
                 )
             }
-
             Column {
                 Box(
                     modifier = Modifier
@@ -116,26 +111,24 @@ fun Welcome(
                 ) {
                     Column {
                         Text(
-                            text = "Что умеет решение",
+                            text = "Что умеет наше решение?",
                             color = colors.textOnPrimary,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "• безопасная загрузка данных диплома ВУЗом\n" +
-                                    "• хешированное хранение записей\n" +
-                                    "• цифровой сертификат для выпускника\n" +
-                                    "• быстрый сценарий проверки для HR",
+                            text = "• безопасная загрузка данных диплома\n" +
+                                    "• шифрование хранимых записей\n" +
+                                    "• быстрый сценарий проверки подлинности диплома\n" +
+                                    "• обмен захэшированным токеном диплома по ссылке или QR-коду",
                             color = colors.textOnPrimary,
                             fontSize = 15.sp,
                             lineHeight = 22.sp
                         )
                     }
                 }
-
                 Spacer(modifier = Modifier.height(24.dp))
-
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()

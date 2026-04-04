@@ -55,7 +55,6 @@ private fun OnBoarding(
         pageCount = { pageCount }
     )
 
-    //val currentPage = OnBoardingPage.allPages[pagerState.currentPage]
     val buttonText = if (pagerState.currentPage == pageCount - 1) "Начать работу" else "Дальше"
 
     Box(
@@ -207,14 +206,14 @@ private sealed class OnBoardingPage(
 
     data object Second : OnBoardingPage(
         lottieJson = R.raw.second,
-        title = "Данные хешируются",
-        description = "Информация о дипломе сохраняется в базе в захешированном виде. Это снижает риск компрометации данных и позволяет проверять подлинность без раскрытия чувствительной информации."
+        title = "Данные шифруются",
+        description = "Каждый вуз использует собственный набор криптографических ключей для шифрования данных дипломов. Без нужных ключей расшифровать и получить эти данные невозможно, поэтому информация остается защищенной."
     )
 
     data object Third : OnBoardingPage(
         lottieJson = R.raw.third,
-        title = "Работодатель проверяет",
-        description = "Студент получает цифровой сертификат с QR-кодом. HR-специалист может отсканировать код или обратиться к API платформы, чтобы быстро проверить валидность диплома."
+        title = "Открытая проверка диплома",
+        description = "Платформа открыта для всех: любой пользователь может проверить подлинность своего диплома, введя его номер и свою фамилию. Система быстро найдет сертификат и подтвердит его валидность."
     )
 
     companion object {

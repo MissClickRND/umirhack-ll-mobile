@@ -107,5 +107,5 @@
 <p align="center"><a href="#">Тут должна была быть ссылка на RuStore, но приложение на модерации</a></p>
 
 <p align="center">
-  <img src="screenshots/browser_j0St8bB2Eo.png.png"/>
+  <img src="screenshots/browser_j0St8bB2Eo.png"/>
 </p>

@@ -102,7 +102,7 @@ private fun SignUpScreen(
 
     AuthScreenContainer(
         title = "Регистрация",
-        subtitle = "Создайте профиль сотрудника или работодателя для безопасной проверки подлинности дипломов и цифровых сертификатов.",
+        subtitle = "Создайте профиль студента для безопасной проверки подлинности дипломов и цифровых сертификатов.",
         onBackClick = { onAction(SignUpAction.NavigateBack) }
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {

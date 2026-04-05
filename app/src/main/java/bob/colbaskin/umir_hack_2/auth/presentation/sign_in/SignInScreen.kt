@@ -92,7 +92,7 @@ private fun SignInScreen(
 
     AuthScreenContainer(
         title = "Вход в платформу",
-        subtitle = "Проверьте подлинность диплома, отсканируйте QR-код или выполните верификацию через API работодателя.",
+        subtitle = "Проверьте подлинность диплома, отсканируйте QR-код или выполните верификацию дипома.",
         onBackClick = { onAction(SignInAction.NavigateBack) }
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {

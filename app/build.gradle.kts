@@ -146,6 +146,6 @@ dependencies {
 
     // Qr
     implementation(libs.core)
-    implementation("com.google.mlkit:barcode-scanning:17.3.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
+    implementation(libs.barcode.scanning)
+    implementation(libs.kotlinx.coroutines.play.services)
 }

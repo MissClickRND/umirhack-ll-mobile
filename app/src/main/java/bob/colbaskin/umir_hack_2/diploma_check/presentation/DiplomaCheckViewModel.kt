@@ -13,15 +13,18 @@ import bob.colbaskin.umir_hack_2.scanner.domain.models.DocumentStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import javax.inject.Inject
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
 import bob.colbaskin.umir_hack_2.auth.domain.AuthRepository
+import bob.colbaskin.umir_hack_2.common.UiState
+import bob.colbaskin.umir_hack_2.common.toUiState
+import bob.colbaskin.umir_hack_2.profile.domain.ProfileRepository
+import bob.colbaskin.umir_hack_2.profile.domain.models.DiplomaStatus
+import bob.colbaskin.umir_hack_2.scanner.presentation.utils.DiplomaQrTokenParser
 
 @HiltViewModel
 class DiplomaCheckViewModel @Inject constructor(
-    private val scannerRepository: ScannerRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val profileRepository: ProfileRepository
 ): ViewModel() {
 
     var state by mutableStateOf(DiplomaCheckState())
@@ -29,113 +32,103 @@ class DiplomaCheckViewModel @Inject constructor(
     private var qrJob: Job? = null
 
     init {
-        observeAuthStatus()
+        refreshAuthStatus()
     }
 
     fun onAction(action: DiplomaCheckAction) {
         when (action) {
             is DiplomaCheckAction.UpdateQuery -> updateQuery(action.value)
             DiplomaCheckAction.VerifyDiploma -> verifyDiploma()
-            DiplomaCheckAction.OpenHowItWorks -> openHowItWorksStub()
             DiplomaCheckAction.RefreshAuthStatus -> refreshAuthStatus()
             DiplomaCheckAction.ClearMessage -> clearMessage()
-            is DiplomaCheckAction.OnQrScanned -> handleQr(action.qrText)
-            DiplomaCheckAction.ClearQrResult -> state = state.copy(
-                qrCheckLoading = false,
-                qrStatus = DocumentStatus.NOT_SCANNED,
-                qrError = null,
-                qrRawText = null
-            )
+            is DiplomaCheckAction.OnQrScanned -> onQrScanned(action.raw)
+            DiplomaCheckAction.ClearQrResult -> {
+                qrJob?.cancel()
+                state = state.copy(
+                    qrCheckLoading = false,
+                    qrRawText = null,
+                    qrError = null,
+                    numDiploma = null,
+                    qrStatus = DocumentStatus.NOT_SCANNED
+                )
+            }
+            is DiplomaCheckAction.UpdateFullName -> {
+                state = state.copy(fullNameInput = action.value)
+            }
             else -> Unit
         }
     }
 
     private fun refreshAuthStatus() {
         viewModelScope.launch {
-            state = when (val result = authRepository.status()) {
-                is ApiResult.Success -> {
-                    state.copy(isAuthorized = result.data)
-                }
-
-                is ApiResult.Error -> {
-                    state.copy(isAuthorized = false)
-                }
-            }
+            val authorized = resolveAuthStatus()
+            state = state.copy(isAuthorized = authorized)
         }
     }
 
-    private fun observeAuthStatus() {
-        viewModelScope.launch {
-            when (val result = authRepository.status()) {
-                is ApiResult.Success -> {
-                    state = state.copy(
-                        isAuthorized = result.data
-                    )
-                }
+    private suspend fun resolveAuthStatus(): Boolean {
+        val firstCheck = authRepository.status()
+        if (firstCheck is ApiResult.Success) return firstCheck.data
 
-                is ApiResult.Error -> {
-                    state = state.copy(
-                        isAuthorized = false
-                    )
-                }
-            }
+        val refreshResult = authRepository.refresh()
+        if (refreshResult is ApiResult.Error) return false
+
+        return when (val secondCheck = authRepository.status()) {
+            is ApiResult.Success -> secondCheck.data
+            is ApiResult.Error -> false
         }
     }
 
-    private fun handleQr(qrText: String) {
-        val normalized = normalizeQrToBackendKey(qrText)
-        if (normalized.isBlank()) {
+    private fun onQrScanned(raw: String) {
+        val token = DiplomaQrTokenParser.extractTokenOrNull(raw)
+
+        state = state.copy(
+            qrCheckLoading = true,
+            qrError = null,
+            numDiploma = null,
+            qrRawText = DiplomaQrTokenParser.sanitizeForUi(raw),
+            qrStatus = DocumentStatus.NOT_SCANNED
+        )
+
+        if (token == null) {
             state = state.copy(
                 qrCheckLoading = false,
-                qrStatus = DocumentStatus.NOT_SCANNED,
-                qrError = "QR-код не распознан или имеет неверный формат",
-                qrRawText = null
+                qrError = "Некорректный QR-код: token не найден.",
+                qrStatus = DocumentStatus.RED
             )
             return
         }
 
         qrJob?.cancel()
         qrJob = viewModelScope.launch {
-            state = state.copy(
-                qrCheckLoading = true,
-                qrStatus = DocumentStatus.NOT_SCANNED,
-                qrError = null,
-                qrRawText = qrText
-            )
-
-            when (val result = scannerRepository.checkDocument(normalized)) {
+            when (val result = profileRepository.getDiplomaByQrToken(token)) {
                 is ApiResult.Success -> {
-                    val status = when (result.data.status.lowercase()) {
-                        "green" -> DocumentStatus.GREEN
-                        "red" -> DocumentStatus.RED
-                        else -> DocumentStatus.NOT_SCANNED
+                    val diploma = result.data
+
+                    val status = when (diploma.status) {
+                        DiplomaStatus.VALID -> DocumentStatus.GREEN
+                        DiplomaStatus.REVOKED -> DocumentStatus.RED
+                        DiplomaStatus.UNKNOWN -> DocumentStatus.RED
                     }
 
                     state = state.copy(
                         qrCheckLoading = false,
-                        qrStatus = status,
-                        qrError = null
+                        numDiploma = diploma,
+                        qrError = null,
+                        qrStatus = status
                     )
                 }
 
                 is ApiResult.Error -> {
                     state = state.copy(
                         qrCheckLoading = false,
-                        qrStatus = DocumentStatus.RED,
-                        qrError = result.title.ifBlank { "Ошибка проверки документа" }
+                        numDiploma = null,
+                        qrError = result.text,
+                        qrStatus = DocumentStatus.RED
                     )
                 }
             }
         }
-    }
-
-    private fun normalizeQrToBackendKey(qrText: String): String {
-        val t = qrText.trim()
-        if (t.isBlank()) return ""
-
-        return if (t.startsWith("http://") || t.startsWith("https://")) {
-            runCatching { t.toUri().lastPathSegment ?: t }.getOrDefault(t)
-        } else t
     }
 
     private fun updateQuery(input: TextFieldValue) {
@@ -171,21 +164,49 @@ class DiplomaCheckViewModel @Inject constructor(
         if (!state.canVerify) return
 
         viewModelScope.launch {
-            state = state.copy(isLoading = true)
-
-            delay(900)
-
             state = state.copy(
-                isLoading = false,
-                infoMessage = "Заглушка: проверка диплома будет подключена после интеграции с бэкендом."
+                isLoading = true,
+                qrCheckLoading = true,
+                qrError = null,
+                qrStatus = DocumentStatus.NOT_SCANNED,
+                numDiploma = null,
+                diplomaResult = UiState.Loading
             )
-        }
-    }
 
-    private fun openHowItWorksStub() {
-        state = state.copy(
-            infoMessage = "Заглушка: здесь можно открыть экран с описанием процесса проверки."
-        )
+            val diplomaNumber = state.diplomaInput.text.replace(" ", "")
+            val result = profileRepository.searchDiplomaByNumber(
+                number = diplomaNumber,
+                fullName = state.fullName
+            ).toUiState()
+
+            state = when (result) {
+                is UiState.Success -> state.copy(
+                    isLoading = false,
+                    qrCheckLoading = false,
+                    qrStatus = DocumentStatus.GREEN,
+                    qrError = null,
+                    numDiploma = result.data,
+                    diplomaResult = result,
+                    infoMessage = "Диплом найден"
+                )
+
+                is UiState.Error -> state.copy(
+                    isLoading = false,
+                    qrCheckLoading = false,
+                    qrStatus = DocumentStatus.RED,
+                    qrError = result.text,
+                    numDiploma = null,
+                    diplomaResult = result,
+                    infoMessage = "Ошибка проверки: ${result.text}"
+                )
+
+                UiState.Loading -> state.copy(
+                    isLoading = false,
+                    qrCheckLoading = false,
+                    diplomaResult = result
+                )
+            }
+        }
     }
 
     private fun clearMessage() {

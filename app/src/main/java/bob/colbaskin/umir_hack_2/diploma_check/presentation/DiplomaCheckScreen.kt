@@ -36,6 +36,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +49,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import bob.colbaskin.umir_hack_2.common.design_system.theme.CustomTheme
 import bob.colbaskin.umir_hack_2.diploma_check.presentation.components.QrCheckResultCard
@@ -61,23 +63,23 @@ import compose.icons.tablericons.Qrcode
 fun DiplomaCheckScreenRoot(
     navController: NavHostController,
     snackbarHostState: SnackbarHostState,
-    viewModel: DiplomaCheckViewModel = hiltViewModel()
+    backStackEntry: NavBackStackEntry,
+    viewModel: DiplomaCheckViewModel = hiltViewModel(backStackEntry)
 ) {
     val state = viewModel.state
 
-    val currentEntry = navController.currentBackStackEntry
-    val diplomaEntry = remember(currentEntry) {
-        navController.getBackStackEntry(Screens.DiplomaCheck)
-    }
-    val qrFlow = remember(diplomaEntry) {
-        diplomaEntry.savedStateHandle.getStateFlow<String?>(NavResultKeys.QR_TEXT, null)
-    }
-    val qrText = qrFlow.collectAsState(initial = null).value
+    val qrText by remember(backStackEntry) {
+        backStackEntry.savedStateHandle.getStateFlow<String?>(
+            NavResultKeys.QR_TEXT,
+            null
+        )
+    }.collectAsState()
 
     LaunchedEffect(qrText) {
         val value = qrText ?: return@LaunchedEffect
+
+        backStackEntry.savedStateHandle.remove<String>(NavResultKeys.QR_TEXT)
         viewModel.onAction(DiplomaCheckAction.OnQrScanned(value))
-        diplomaEntry.savedStateHandle[NavResultKeys.QR_TEXT] = null
     }
 
     LaunchedEffect(state.infoMessage) {
@@ -90,20 +92,12 @@ fun DiplomaCheckScreenRoot(
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.onAction(DiplomaCheckAction.RefreshAuthStatus)
-    }
-
     DiplomaCheckScreen(
         state = state,
         onAction = { action ->
             when (action) {
-                DiplomaCheckAction.OpenQrScanner -> {
-                    navController.navigate(Screens.QrScanner)
-                }
-                DiplomaCheckAction.OpenSignIn -> {
-                    navController.navigate(Screens.SignIn)
-                }
+                DiplomaCheckAction.OpenQrScanner -> navController.navigate(Screens.QrScanner)
+                DiplomaCheckAction.OpenSignIn -> navController.navigate(Screens.SignIn)
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -210,18 +204,29 @@ private fun MainVerificationCard(
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        SearchInput(
-            value = state.diplomaInput,
-            onValueChange = { onAction(DiplomaCheckAction.UpdateQuery(it)) },
-            placeholder = "Введите номер диплома"
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            SearchInput(
+                value = state.diplomaInput,
+                onValueChange = { onAction(DiplomaCheckAction.UpdateQuery(it)) },
+                placeholder = "Введите номер диплома",
+                keyboardType = KeyboardType.Number
+            )
+            SearchInput(
+                value = state.fullNameInput,
+                onValueChange = { onAction(DiplomaCheckAction.UpdateFullName(it)) },
+                placeholder = "Введите ФИО",
+                keyboardType = KeyboardType.Text
+            )
+        }
 
         Spacer(modifier = Modifier.height(14.dp))
 
         GradientActionButton(
             text = "Проверить",
             isLoading = state.isLoading,
-            enabled = state.canVerify || state.isLoading,
+            enabled = state.canVerify && !state.isLoading,
             onClick = { onAction(DiplomaCheckAction.VerifyDiploma) }
         )
 
@@ -362,6 +367,7 @@ private fun SearchInput(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     placeholder: String,
+    keyboardType: KeyboardType,
 ) {
     val colors = CustomTheme.colors
 
@@ -382,7 +388,7 @@ private fun SearchInput(
             ),
             cursorBrush = SolidColor(colors.primary),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number
+                keyboardType = keyboardType
             ),
             modifier = Modifier.fillMaxWidth(),
             decorationBox = { innerTextField ->
@@ -400,7 +406,7 @@ private fun SearchInput(
 }
 
 @Composable
-private fun GradientActionButton(
+fun GradientActionButton(
     text: String,
     isLoading: Boolean,
     enabled: Boolean,
@@ -415,7 +421,8 @@ private fun GradientActionButton(
             .clip(RoundedCornerShape(16.dp))
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(colors.primary, colors.primaryDark)
+                    colors = if (enabled) listOf(colors.primary, colors.primaryDark)
+                    else listOf(colors.primary.copy(alpha = 0.5f), colors.primaryDark.copy(alpha = 0.5f))
                 )
             )
             .clickable(

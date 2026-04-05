@@ -2,9 +2,15 @@ package bob.colbaskin.umir_hack_2.profile.presentation.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -20,7 +26,8 @@ fun FullScreenQrDialog(
     onDismiss: () -> Unit
 ) {
     val colors = CustomTheme.colors
-    val qrBitmap = remember(link.shortUrl) { generateQrImageBitmap(link.shortUrl, 1200) }
+    val value = link.shareUrl ?: return
+    val qrBitmap = remember(value) { generateQrImageBitmap(value, 1200) }
 
     Dialog(onDismissRequest = onDismiss) {
         Box(
@@ -34,6 +41,22 @@ fun FullScreenQrDialog(
                 contentDescription = "Полноэкранный QR",
                 modifier = Modifier.size(320.dp)
             )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .size(44.dp)
+                    .background(colors.surface, CircleShape)
+                    .clickable(onClick = onDismiss),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Close,
+                    contentDescription = "Закрыть",
+                    tint = colors.textPrimary
+                )
+            }
         }
     }
 }

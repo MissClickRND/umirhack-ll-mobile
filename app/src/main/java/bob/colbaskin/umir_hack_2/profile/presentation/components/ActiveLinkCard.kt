@@ -1,6 +1,7 @@
 package bob.colbaskin.umir_hack_2.profile.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import bob.colbaskin.umir_hack_2.common.design_system.theme.CustomTheme
 import bob.colbaskin.umir_hack_2.profile.domain.models.DiplomaShareLink
@@ -28,6 +30,7 @@ import java.time.Instant
 fun ActiveLinkCard(
     title: String,
     link: DiplomaShareLink,
+    onCopy: (() -> Unit)? = null,
     onShowQr: () -> Unit,
     onRevoke: () -> Unit
 ) {
@@ -55,7 +58,7 @@ fun ActiveLinkCard(
             }
 
             Text(
-                text = remainingText(link.expiresAt),
+                text = remainingText(link),
                 color = colors.primary
             )
         }
@@ -73,13 +76,32 @@ fun ActiveLinkCard(
                 .padding(12.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text("Токен:", color = colors.textSecondary)
-                    Text(link.token, color = colors.textPrimary)
+                    Text(
+                        text = link.tokenString ?: "ID ${link.tokenId}",
+                        color = colors.textPrimary,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
                 }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text("Ссылка:", color = colors.textSecondary)
-                    Text(link.shortUrl, color = colors.textPrimary)
+
+                    Text(
+                        text = link.shareUrl ?: "Недоступна на этом устройстве",
+                        color = colors.textPrimary,
+                        modifier = Modifier.padding(start = 12.dp),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
                 }
             }
         }
@@ -87,12 +109,22 @@ fun ActiveLinkCard(
         Spacer(modifier = Modifier.padding(vertical = 8.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SmallOutlineButton(
-                text = "QR-код",
-                icon = Icons.Outlined.QrCode2,
-                onClick = onShowQr,
-                modifier = Modifier.weight(1f)
-            )
+            if (link.shareUrl != null && onCopy != null) {
+                IconOnlyOutlineButton(
+                    icon = Icons.Outlined.ContentCopy,
+                    onClick = onCopy
+                )
+            }
+
+            if (link.shareUrl != null) {
+                SmallOutlineButton(
+                    text = "QR-код",
+                    icon = Icons.Outlined.QrCode2,
+                    onClick = onShowQr,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
             SmallDangerButton(
                 text = "Отозвать",
                 icon = Icons.Outlined.RemoveCircleOutline,
@@ -103,13 +135,43 @@ fun ActiveLinkCard(
     }
 }
 
-private fun remainingText(expiresAt: Instant): String {
+@Composable
+private fun IconOnlyOutlineButton(
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    val colors = CustomTheme.colors
+
+    Box(
+        modifier = Modifier
+            .background(colors.surfaceSecondary, RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 14.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = colors.textPrimary
+        )
+    }
+}
+
+private fun remainingText(link: DiplomaShareLink): String {
+    if (link.isOneTime) {
+        return if (link.lastUsedAt == null) "До 1 использования" else "Использована"
+    }
+
+    val expiresAt = link.expiresAt ?: return "Бессрочно"
+
     val duration = Duration.between(Instant.now(), expiresAt)
     val hours = duration.toHours()
     val minutes = duration.toMinutes() % 60
-    return if (hours > 24) {
-        "${hours / 24} дней"
-    } else {
-        "${hours} ч ${minutes} мин"
+
+    return when {
+        duration.isNegative || duration.isZero -> "Истекла"
+        hours >= 24 -> "${hours / 24} дней"
+        else -> "${hours} ч ${minutes} мин"
     }
 }
+

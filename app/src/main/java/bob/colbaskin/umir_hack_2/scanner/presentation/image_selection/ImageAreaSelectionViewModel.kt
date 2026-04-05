@@ -1,10 +1,6 @@
 package bob.colbaskin.umir_hack_2.scanner.presentation.image_selection
 
-import android.content.ContentResolver
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -22,6 +18,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import androidx.core.net.toUri
+import bob.colbaskin.umir_hack_2.scanner.presentation.utils.DiplomaQrTokenParser
 
 @HiltViewModel
 class ImageAreaSelectionViewModel @Inject constructor(
@@ -74,8 +71,7 @@ class ImageAreaSelectionViewModel @Inject constructor(
             val qrText: String? = withContext(Dispatchers.IO) {
                 runCatching {
                     val uri = imageUriString.toUri()
-                    val bitmap = loadBitmapFromUri(context.contentResolver, uri) ?: return@runCatching null
-                    val image = InputImage.fromBitmap(bitmap, 0)
+                    val image = InputImage.fromFilePath(context, uri)
                     val barcodes = barcodeScanner.process(image).await()
                     barcodes.firstOrNull()?.rawValue?.trim()
                 }.getOrNull()
@@ -89,9 +85,9 @@ class ImageAreaSelectionViewModel @Inject constructor(
                 return@launch
             }
 
-            val normalized = normalizeQrText(qrText)
+            val token = normalizeQrText(qrText)
 
-            if (normalized.isBlank()) {
+            if (token.isBlank()) {
                 state = state.copy(
                     isLoading = false,
                     errorMessage = "Не удалось корректно прочитать QR-код."
@@ -101,30 +97,14 @@ class ImageAreaSelectionViewModel @Inject constructor(
 
             state = state.copy(
                 isLoading = false,
-                detectedQrText = normalized,
+                detectedQrText = token,
                 isCompleted = true
             )
         }
     }
 
-    private fun loadBitmapFromUri(
-        contentResolver: ContentResolver,
-        uri: Uri
-    ): Bitmap? {
-        return contentResolver.openInputStream(uri)?.use { input ->
-            BitmapFactory.decodeStream(input)
-        }
-    }
-
     private fun normalizeQrText(raw: String): String {
-        val value = raw.trim()
-        if (value.isBlank()) return ""
-
-        return if (value.startsWith("http://") || value.startsWith("https://")) {
-            value.toUri().lastPathSegment ?: value
-        } else {
-            value
-        }
+        return DiplomaQrTokenParser.extractTokenOrNull(raw).orEmpty()
     }
 
     override fun onCleared() {

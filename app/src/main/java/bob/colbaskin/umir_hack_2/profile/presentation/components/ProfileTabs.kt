@@ -15,7 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import bob.colbaskin.umir_hack_2.common.design_system.theme.CustomTheme
-import bob.colbaskin.umir_hack_2.profile.presentation.ProfileTab
+import bob.colbaskin.umir_hack_2.profile.domain.models.ProfileTab
+
 
 @Composable
 fun ProfileTabs(

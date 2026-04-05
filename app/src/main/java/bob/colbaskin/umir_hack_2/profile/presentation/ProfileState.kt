@@ -6,26 +6,27 @@ import bob.colbaskin.umir_hack_2.profile.domain.models.DiplomaLinkHistoryItem
 import bob.colbaskin.umir_hack_2.profile.domain.models.DiplomaShareDuration
 import bob.colbaskin.umir_hack_2.profile.domain.models.DiplomaShareLink
 import bob.colbaskin.umir_hack_2.profile.domain.models.ProfileDiploma
+import bob.colbaskin.umir_hack_2.profile.domain.models.ProfileTab
 
 data class ProfileState(
     val userState: UiState<User> = UiState.Loading,
+
     val selectedTab: ProfileTab = ProfileTab.MyDiplomas,
+
+    val isLoadingContent: Boolean = false,
 
     val diplomas: List<ProfileDiploma> = emptyList(),
     val activeLinks: List<DiplomaShareLink> = emptyList(),
     val history: List<DiplomaLinkHistoryItem> = emptyList(),
 
     val isShareSheetVisible: Boolean = false,
-    val selectedDiplomaIdForSharing: String? = null,
+    val selectedDiplomaIdForSharing: Long? = null,
     val selectedDuration: DiplomaShareDuration = DiplomaShareDuration.DAYS_30,
+    val isGeneratingLink: Boolean = false,
     val generatedLink: DiplomaShareLink? = null,
 
     val fullscreenQrLink: DiplomaShareLink? = null,
-    val message: String? = null
-)
 
-enum class ProfileTab {
-    MyDiplomas,
-    ActiveLinks,
-    History
-}
+    val attachDiplomaIdText: String = "",
+    val isAttachingDiploma: Boolean = false
+)

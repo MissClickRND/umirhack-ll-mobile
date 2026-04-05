@@ -65,6 +65,8 @@ localbroadcastmanager = "1.1.0"
 
 # Qr
 core = "3.5.4"
+kotlinxCoroutinesPlayServices = "1.10.2"
+barcodeScanning = "17.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -137,6 +139,8 @@ androidx-localbroadcastmanager = { module = "androidx.localbroadcastmanager:loca
 
 # Qr
 core = { module = "com.google.zxing:core", version.ref = "core" }
+barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcodeScanning" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -1,9 +1,11 @@
 package bob.colbaskin.umir_hack_2.scanner.presentation.camera
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import bob.colbaskin.umir_hack_2.scanner.presentation.utils.DiplomaQrTokenParser
 import io.scanbot.sdk.barcode.BarcodeFormat
 import io.scanbot.sdk.ui_v2.common.OrientationLockMode
 import io.scanbot.sdk.ui_v2.barcode.BarcodeScannerView
@@ -24,15 +26,7 @@ fun CameraScannerView(
                 orientationLockMode = OrientationLockMode.PORTRAIT
             }
 
-            scannerConfiguration.apply {
-                barcodeFormats = listOf(
-                    BarcodeFormat.QR_CODE,
-                    BarcodeFormat.CODABAR,
-                    BarcodeFormat.CODE_128,
-                    BarcodeFormat.CODE_39,
-                    BarcodeFormat.EAN_13
-                )
-            }
+            scannerConfiguration.apply { barcodeFormats = listOf(BarcodeFormat.QR_CODE) }
 
             actionBar.flipCameraButton.visible = false
             actionBar.zoomButton.visible = false
@@ -52,13 +46,18 @@ fun CameraScannerView(
             modifier = modifier.fillMaxSize(),
             configuration = screenConfiguration,
             onBarcodeScanned = { result ->
+                Log.d("SCAN", "onBarcodeScanned: ${result.items.firstOrNull()?.barcode?.text}")
                 val barcodeItem = result.items.firstOrNull() ?: return@BarcodeScannerView
-                val qrText = barcodeItem.barcode.text.trim()
-                if (qrText.isNotEmpty()) {
-                    onQrScanned(qrText)
-                }
+                val raw = barcodeItem.barcode.text.trim()
+                if (raw.isEmpty()) return@BarcodeScannerView
+
+                val token = DiplomaQrTokenParser.extractTokenOrNull(raw)
+                    ?: return@BarcodeScannerView
+
+                onQrScanned(token)
             },
-            onBarcodeScannerClosed = { _ ->
+            onBarcodeScannerClosed = { reason  ->
+                Log.d("SCAN", "onBarcodeScannerClosed: $reason")
                 onClosed()
             }
         )

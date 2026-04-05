@@ -3,11 +3,11 @@ package bob.colbaskin.umir_hack_2.profile.domain.models
 import java.time.Instant
 
 data class DiplomaLinkHistoryItem(
-    val id: String,
-    val diplomaId: String,
+    val tokenId: Long,
+    val diplomaId: Long,
     val diplomaTitle: String,
-    val shortUrl: String,
+    val shareUrl: String?,
     val createdAt: Instant,
-    val expiresAt: Instant,
-    val wasRevoked: Boolean
+    val endedAt: Instant?,
+    val status: HistoryStatus
 )

@@ -6,9 +6,11 @@ import bob.colbaskin.umir_hack_2.auth.domain.AuthRepository
 import bob.colbaskin.umir_hack_2.common.user_prefs.data.UserPreferencesRepositoryImpl
 import bob.colbaskin.umir_hack_2.common.user_prefs.data.datastore.UserDataStore
 import bob.colbaskin.umir_hack_2.common.user_prefs.domain.UserPreferencesRepository
+import bob.colbaskin.umir_hack_2.profile.data.DiplomasService
 import bob.colbaskin.umir_hack_2.profile.data.ProfileRepositoryImpl
 import bob.colbaskin.umir_hack_2.profile.domain.ProfileRepository
-import bob.colbaskin.umir_hack_2.profile.domain.ProfileService
+import bob.colbaskin.umir_hack_2.profile.presentation.components.share_link.ShareLinkBuilder
+import bob.colbaskin.umir_hack_2.profile.presentation.components.share_link.ShareLinkBuilderImpl
 import bob.colbaskin.umir_hack_2.scanner.data.remote.DocumentApi
 import bob.colbaskin.umir_hack_2.scanner.data.remote.ScannerRepositoryImpl
 import bob.colbaskin.umir_hack_2.scanner.domain.ScannerRepository
@@ -49,14 +51,20 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideProfileService(retrofit: Retrofit): ProfileService {
-        return retrofit.create(ProfileService::class.java)
+    fun provideDiplomasService(retrofit: Retrofit): DiplomasService {
+        return retrofit.create(DiplomasService::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideProfileRepository (profileApi: ProfileService): ProfileRepository {
-        return ProfileRepositoryImpl(profileApi = profileApi)
+    fun provideProfileRepository (
+        authApi: AuthApiService,
+        diplomasApi: DiplomasService
+    ): ProfileRepository {
+        return ProfileRepositoryImpl(
+            authApi = authApi,
+            diplomasApi = diplomasApi
+        )
     }
 
     @Provides
@@ -73,5 +81,11 @@ object RepositoryModule {
         return ScannerRepositoryImpl(
             documentApi = documentApi
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideShareLinkBuilder(): ShareLinkBuilder {
+        return ShareLinkBuilderImpl()
     }
 }

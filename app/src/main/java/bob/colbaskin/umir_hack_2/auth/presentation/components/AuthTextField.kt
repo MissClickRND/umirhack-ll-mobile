@@ -35,6 +35,10 @@ fun AuthTextField(
         trailingIcon = trailingIcon,
         supportingText = supportingText,
         colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = colors.textPrimary,
+            unfocusedTextColor = colors.textPrimary,
+            disabledTextColor = colors.textPrimary,
+            errorTextColor = colors.textPrimary,
             focusedContainerColor = colors.surface,
             unfocusedContainerColor = colors.surface,
             disabledContainerColor = colors.surface,
@@ -44,8 +48,6 @@ fun AuthTextField(
             errorBorderColor = colors.primary,
             focusedLabelColor = colors.primary,
             unfocusedLabelColor = colors.textSecondary,
-            focusedTextColor = colors.textPrimary,
-            unfocusedTextColor = colors.textPrimary,
             cursorColor = colors.primary
         )
     )

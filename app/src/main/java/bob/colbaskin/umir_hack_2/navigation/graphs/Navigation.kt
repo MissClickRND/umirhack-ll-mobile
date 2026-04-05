@@ -48,14 +48,18 @@ fun NavGraphBuilder.mainGraph(
     navigation<Graphs.Main>(
         startDestination = Screens.DiplomaCheck
     ) {
-        composable<Screens.DiplomaCheck> {
+        composable<Screens.DiplomaCheck> { backStackEntry ->
             DiplomaCheckScreenRoot(
                 navController = navController,
-                snackbarHostState = snackbarHostState
+                snackbarHostState = snackbarHostState,
+                backStackEntry = backStackEntry
             )
         }
         composable<Screens.Profile> {
-            ProfileScreenRoot(snackbarHostState = snackbarHostState)
+            ProfileScreenRoot(
+                navController = navController,
+                snackbarHostState = snackbarHostState
+            )
         }
     }
 }

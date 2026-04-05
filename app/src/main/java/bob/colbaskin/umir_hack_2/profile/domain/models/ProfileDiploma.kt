@@ -1,7 +1,7 @@
 package bob.colbaskin.umir_hack_2.profile.domain.models
 
 data class ProfileDiploma(
-    val id: String,
+    val id: Long,
     val title: String,
     val qualification: String,
     val year: Int,

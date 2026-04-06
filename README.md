@@ -104,8 +104,8 @@
 ## Установка
 <p align="center">Ссылка на текущую версию <a href="https://github.com/MissClickRND/umirhack-ll-mobile/releases/tag/v1.0.0">Release v1.0.0</a></p>
 <p align="center"><a href="https://github.com/MissClickRND/umirhack-ll-mobile/releases/download/v1.0.0/app-release.apk">Прямая ссылка на установку .apk</a></p>
-<p align="center"><a href="#https://www.rustore.ru/catalog/app/bob.colbaskin.umir_hack_2">RuStore</a></p>
+<p align="center"><a href="https://www.rustore.ru/catalog/app/bob.colbaskin.umir_hack_2">RuStore</a></p>
 
 <p align="center">
-  <img src="screenshots/browser_j0St8bB2Eo.png"/>
+  <img src="screenshots/browser_YGFUG4eEvC.png"/>
 </p>

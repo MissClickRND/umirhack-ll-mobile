@@ -6,6 +6,6 @@ import javax.inject.Inject
 class ShareLinkBuilderImpl @Inject constructor() : ShareLinkBuilder {
     override fun build(tokenString: String): String {
         val base = BuildConfig.BASE_API_URL.trimEnd('/')
-        return "$base/diplomas/qr-token?token=$tokenString"
+        return "$base/$tokenString"
     }
 }
